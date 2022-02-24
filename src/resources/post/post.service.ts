@@ -1,16 +1,16 @@
 import PostModel from '@/resources/post/post.model';
 import Post from '@/resources/post/post.interface';
+import AppError from '@/utils/appError';
 
 class PostService {
     private post = PostModel;
 
     public async create(title: string, body: string): Promise<Post> {
-        try {
-            const post = await this.post.create({ title, body });
-            return post;
-        } catch (error) {
-            throw new Error('Unable to create post');
+        const post = await this.post.create({ title, body });
+        if (!post) {
+            throw new AppError("Can't create post ", 400);
         }
+        return post;
     }
 }
 

@@ -1,6 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import Controller from '@/utils/interfaces/controller.interface';
-import HttpException from '@/utils/exceptions/http.exception';
 import UserService from '@/resources/user/user.service';
 
 class UserController implements Controller {
@@ -8,6 +7,13 @@ class UserController implements Controller {
     public router = Router();
     private UserService = new UserService();
 
+    private catchAsync = (
+        fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
+    ) => {
+        return (req: Request, res: Response, next: NextFunction) => {
+            fn(req, res, next).catch(next);
+        };
+    };
     constructor() {
         this.initialiseRoutes();
     }
@@ -17,12 +23,8 @@ class UserController implements Controller {
         this.router.post(`${this.path}`, this.create);
     }
 
-    private create = async (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) => {
-        try {
+    private create = this.catchAsync(
+        async (req: Request, res: Response, next: NextFunction) => {
             const { type, label, required, visible } = req.body;
             const user = await this.UserService.create(
                 type,
@@ -31,20 +33,15 @@ class UserController implements Controller {
                 visible
             );
             return res.status(201).json({ user });
-        } catch (error) {
-            console.log('error ', error);
-            next(new HttpException(400, 'Cannot create post'));
         }
-    };
+    );
 
-    private get = async (req: Request, res: Response, next: NextFunction) => {
-        try {
+    private get = this.catchAsync(
+        async (req: Request, res: Response, next: NextFunction) => {
             const users = await this.UserService.get();
             return res.status(200).json({ users });
-        } catch (e) {
-            next(new HttpException(400, 'Cannot create post'));
         }
-    };
+    );
 }
 
 export default UserController;

@@ -4,8 +4,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import morgan from 'morgan';
+import { Request, Response, NextFunction } from 'express';
+import AppError from '@/utils/appError';
+import globalErrorHandler from '@/utils//error.controller';
 import Controller from '@/utils/interfaces/controller.interface';
-import ErrorMiddleware from '@/middleware/error.middleware';
 
 class App {
     public express: Application;
@@ -37,7 +39,13 @@ class App {
     }
 
     private initialiseErrorHandling(): void {
-        this.express.use(ErrorMiddleware);
+        this.express.all(
+            '*',
+            (req: Request, res: Response, next: NextFunction) => {
+                next(new AppError(`Can't find ${req.originalUrl} url`, 404));
+            }
+        );
+        this.express.use(globalErrorHandler);
     }
 
     private initialiseDatabaseConnection(): void {

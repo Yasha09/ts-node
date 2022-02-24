@@ -9,7 +9,8 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const compression_1 = __importDefault(require("compression"));
 const morgan_1 = __importDefault(require("morgan"));
-const error_middleware_1 = __importDefault(require("@/middleware/error.middleware"));
+const appError_1 = __importDefault(require("@/utils/appError"));
+const error_controller_1 = __importDefault(require("@/utils//error.controller"));
 class App {
     constructor(controllers, port) {
         this.express = (0, express_1.default)();
@@ -33,7 +34,10 @@ class App {
         });
     }
     initialiseErrorHandling() {
-        this.express.use(error_middleware_1.default);
+        this.express.all('*', (req, res, next) => {
+            next(new appError_1.default(`Can't find ${req.originalUrl} url`, 404));
+        });
+        this.express.use(error_controller_1.default);
     }
     initialiseDatabaseConnection() {
         const { MONGO_URL } = process.env;

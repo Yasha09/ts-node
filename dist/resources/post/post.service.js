@@ -13,19 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const post_model_1 = __importDefault(require("@/resources/post/post.model"));
+const appError_1 = __importDefault(require("@/utils/appError"));
 class PostService {
     constructor() {
         this.post = post_model_1.default;
     }
     create(title, body) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const post = yield this.post.create({ title, body });
-                return post;
+            const post = yield this.post.create({ title, body });
+            if (!post) {
+                throw new appError_1.default("Can't create post ", 400);
             }
-            catch (error) {
-                throw new Error('Unable to create post');
-            }
+            return post;
         });
     }
 }

@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const http_exception_1 = __importDefault(require("@/utils/exceptions/http.exception"));
 const validation_middleware_1 = __importDefault(require("@/middleware/validation.middleware"));
 const post_vaildation_1 = __importDefault(require("@/resources/post/post.vaildation"));
 const post_service_1 = __importDefault(require("@/resources/post/post.service"));
@@ -22,16 +21,16 @@ class PostController {
         this.path = '/posts';
         this.router = (0, express_1.Router)();
         this.PostService = new post_service_1.default();
-        this.create = (req, res, next) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                const { title, body } = req.body;
-                const post = yield this.PostService.create(title, body);
-                return res.status(201).json({ post });
-            }
-            catch (error) {
-                next(new http_exception_1.default(400, 'Cannot create post'));
-            }
-        });
+        this.catchAsync = (fn) => {
+            return (req, res, next) => {
+                fn(req, res, next).catch(next);
+            };
+        };
+        this.create = this.catchAsync((req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const { title, body } = req.body;
+            const post = yield this.PostService.create(title, body);
+            return res.status(201).json({ post });
+        }));
         this.initialiseRoutes();
     }
     initialiseRoutes() {
